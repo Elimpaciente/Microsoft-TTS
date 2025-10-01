@@ -21,7 +21,8 @@ async def text_to_speech_main(voice: str = "", text: str = ""):
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente"
+                "developer": "El Impaciente",
+                "message": "Se requieren los parámetros voice y text"
             },
             status_code=400
         )
@@ -38,7 +39,8 @@ async def text_to_speech_main(voice: str = "", text: str = ""):
             return JSONResponse(
                 content={
                     "status_code": 400,
-                    "developer": "El Impaciente"
+                    "developer": "El Impaciente",
+                    "message": "No se pudo generar el audio"
                 },
                 status_code=400
             )
@@ -53,11 +55,12 @@ async def text_to_speech_main(voice: str = "", text: str = ""):
             }
         )
         
-    except:
+    except Exception as e:
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente"
+                "developer": "El Impaciente",
+                "message": "Error al procesar la solicitud"
             },
             status_code=400
         )
@@ -68,7 +71,8 @@ async def text_to_speech_api(voice: str = "", text: str = ""):
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente"
+                "developer": "El Impaciente",
+                "message": "Se requieren los parámetros voice y text"
             },
             status_code=400
         )
@@ -85,7 +89,8 @@ async def text_to_speech_api(voice: str = "", text: str = ""):
             return JSONResponse(
                 content={
                     "status_code": 400,
-                    "developer": "El Impaciente"
+                    "developer": "El Impaciente",
+                    "message": "No se pudo generar el audio"
                 },
                 status_code=400
             )
@@ -100,11 +105,12 @@ async def text_to_speech_api(voice: str = "", text: str = ""):
             }
         )
         
-    except:
+    except Exception as e:
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente"
+                "developer": "El Impaciente",
+                "message": "Error al procesar la solicitud"
             },
             status_code=400
         )
@@ -132,11 +138,12 @@ async def list_voices():
             status_code=200
         )
         
-    except:
+    except Exception as e:
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente"
+                "developer": "El Impaciente",
+                "message": "Error al obtener las voces"
             },
             status_code=400
         )
@@ -164,11 +171,12 @@ async def list_voices_api():
             status_code=200
         )
         
-    except:
+    except Exception as e:
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente"
+                "developer": "El Impaciente",
+                "message": "Error al obtener las voces"
             },
             status_code=400
         )
