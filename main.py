@@ -21,8 +21,7 @@ async def text_to_speech(voice: str = None, text: str = None):
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Se requieren los parámetros voice y text"
+                "developer": "El Impaciente"
             },
             status_code=400
         )
@@ -39,8 +38,7 @@ async def text_to_speech(voice: str = None, text: str = None):
             return JSONResponse(
                 content={
                     "status_code": 400,
-                    "developer": "El Impaciente",
-                    "message": "No se pudo generar audio"
+                    "developer": "El Impaciente"
                 },
                 status_code=400
             )
@@ -55,12 +53,11 @@ async def text_to_speech(voice: str = None, text: str = None):
             }
         )
         
-    except Exception as e:
+    except:
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente",
-                "message": f"Error: {str(e)}"
+                "developer": "El Impaciente"
             },
             status_code=400
         )
@@ -88,12 +85,11 @@ async def list_voices():
             status_code=200
         )
         
-    except Exception as e:
+    except:
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente",
-                "message": f"Error: {str(e)}"
+                "developer": "El Impaciente"
             },
             status_code=400
         )
