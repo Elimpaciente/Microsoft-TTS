@@ -5,16 +5,7 @@ from io import BytesIO
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-    return JSONResponse(
-        content={
-            "status_code": 200,
-            "developer": "El Impaciente"
-        },
-        status_code=200
-    )
-
+@app.get("/", response_class=HTMLResponse)
 @app.get("/documentacion", response_class=HTMLResponse)
 @app.get("/documentacion.html", response_class=HTMLResponse)
 async def documentacion():
