@@ -1,7 +1,6 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse
+from fastapi.responses import JSONResponse, Response, HTMLResponse
 import edge_tts
-from io import BytesIO
 
 app = FastAPI()
 
@@ -100,6 +99,15 @@ async def documentacion():
             font-size: 12px;
             margin-left: 5px;
         }
+        .optional-badge {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
         .response-example {
             background: #f8f9fa;
             padding: 15px;
@@ -135,7 +143,7 @@ async def documentacion():
         <div class="section">
             <h2>📋 Información General</h2>
             <div class="info-block">
-                <strong>Base URL:</strong> <code>https://convertidor-impaciente-de-microsoft.vercel.app/api/tts?voice=&text=</code>
+                <strong>Base URL:</strong> <code>https://convertidor-impaciente-de-microsoft.vercel.app/api/tts</code>
             </div>
             <div class="info-block"><strong>Método:</strong> GET</div>
             <div class="info-block"><strong>Formato:</strong> Audio MP3 (24kHz)</div>
@@ -146,21 +154,54 @@ async def documentacion():
         <div class="section">
             <h2>🔮 Parámetros</h2>
             <div class="info-block">
-                <strong>voice</strong> <span class="badge">requerido</span><br>
-                Nombre de la voz neural (ej: es-MX-DaliaNeural)
-            </div>
-            <div class="info-block">
                 <strong>text</strong> <span class="badge">requerido</span><br>
                 Texto a convertir en audio
+            </div>
+            <div class="info-block">
+                <strong>voice</strong> <span class="optional-badge">opcional</span><br>
+                Nombre de la voz neural (por defecto: en-US-GuyNeural)<br>
+                Ejemplo: es-MX-DaliaNeural
+            </div>
+            <div class="info-block">
+                <strong>rate</strong> <span class="optional-badge">opcional</span><br>
+                Velocidad del audio (por defecto: +0%)<br>
+                Ejemplos: +50% (más rápido), -25% (más lento)
+            </div>
+            <div class="info-block">
+                <strong>pitch</strong> <span class="optional-badge">opcional</span><br>
+                Tono de voz (por defecto: +0Hz)<br>
+                Ejemplos: +10Hz (más agudo), -5Hz (más grave)
+            </div>
+            <div class="info-block">
+                <strong>volume</strong> <span class="optional-badge">opcional</span><br>
+                Volumen del audio (por defecto: +0%)<br>
+                Ejemplos: +20% (más alto), -10% (más bajo)
+            </div>
+            <div class="info-block">
+                <strong>file_name</strong> <span class="optional-badge">opcional</span><br>
+                Nombre del archivo de salida (por defecto: generated_mp3.mp3)
             </div>
         </div>
 
         <div class="section">
-            <h2>💡 Ejemplo de Uso</h2>
+            <h2>💡 Ejemplos de Uso</h2>
+            
+            <h3 style="color: #667eea; margin-top: 20px;">Básico</h3>
             <div class="example-url">
-                https://convertidor-impaciente-de-microsoft.vercel.app/api/tts?voice=es-MX-DaliaNeural&text=Buen día
+                /api/tts?text=Hola mundo&voice=es-MX-DaliaNeural
             </div>
-            <a href="/api/tts?voice=es-MX-DaliaNeural&text=Hola, esta es una prueba de la API" 
+            
+            <h3 style="color: #667eea; margin-top: 20px;">Con velocidad personalizada</h3>
+            <div class="example-url">
+                /api/tts?text=Hola mundo&voice=es-MX-DaliaNeural&rate=+50%
+            </div>
+            
+            <h3 style="color: #667eea; margin-top: 20px;">Completo con todos los parámetros</h3>
+            <div class="example-url">
+                /api/tts?text=Hola mundo&voice=es-MX-DaliaNeural&rate=+25%&pitch=-5Hz&volume=+10%&file_name=mi_audio.mp3
+            </div>
+
+            <a href="/api/tts?text=Hola, esta es una prueba con todos los parámetros&voice=es-MX-DaliaNeural&rate=+20%&volume=+10%" 
                class="btn-test" target="_blank">🎵 Probar Ahora</a>
         </div>
 
@@ -168,14 +209,34 @@ async def documentacion():
             <h2>📤 Respuestas</h2>
             <div class="response-example">
                 <strong>✅ Éxito (200):</strong><br>
-                Devuelve el archivo de audio MP3 directamente
+                Devuelve el archivo de audio MP3 directamente con headers completos
             </div>
             <div class="response-example">
-                <strong>❌ Error (400):</strong>
+                <strong>❌ Error (400) - Texto faltante:</strong>
                 <div class="code-block">{
   "status_code": 400,
-  "developer": "El Impaciente",
-  "message": "Se requieren los parámetros voice y text"
+  "message": "Text is required"
+}</div>
+            </div>
+            <div class="response-example">
+                <strong>❌ Error (500) - Sin audio generado:</strong>
+                <div class="code-block">{
+  "status_code": 500,
+  "message": "No audio chunks received from TTS service"
+}</div>
+            </div>
+            <div class="response-example">
+                <strong>❌ Error (500) - Audio vacío:</strong>
+                <div class="code-block">{
+  "status_code": 500,
+  "message": "Empty audio data received"
+}</div>
+            </div>
+            <div class="response-example">
+                <strong>❌ Error (500) - Error general:</strong>
+                <div class="code-block">{
+  "status_code": 500,
+  "message": "Error: [detalle del error]"
 }</div>
             </div>
         </div>
@@ -224,9 +285,14 @@ async def documentacion():
             
             <h3 style="color: #667eea; margin-top: 20px;">JavaScript</h3>
             <div class="code-block">const url = "https://convertidor-impaciente-de-microsoft.vercel.app/api/tts";
-const params = "?voice=es-MX-DaliaNeural&text=Hola mundo";
+const params = new URLSearchParams({
+  text: "Hola mundo",
+  voice: "es-MX-DaliaNeural",
+  rate: "+25%",
+  volume: "+10%"
+});
 
-fetch(url + params)
+fetch(`${url}?${params}`)
   .then(res => res.blob())
   .then(blob => {
     const audio = new Audio(URL.createObjectURL(blob));
@@ -237,20 +303,30 @@ fetch(url + params)
             <div class="code-block">import requests
 
 url = "https://convertidor-impaciente-de-microsoft.vercel.app/api/tts"
-params = {"voice": "es-MX-DaliaNeural", "text": "Hola mundo"}
+params = {
+    "text": "Hola mundo",
+    "voice": "es-MX-DaliaNeural",
+    "rate": "+25%",
+    "pitch": "-5Hz",
+    "volume": "+10%"
+}
 
 response = requests.get(url, params=params)
 with open("audio.mp3", "wb") as f:
     f.write(response.content)</div>
 
             <h3 style="color: #667eea; margin-top: 20px;">cURL</h3>
-            <div class="code-block">curl "https://convertidor-impaciente-de-microsoft.vercel.app/api/tts?voice=es-MX-DaliaNeural&text=Hola" -o audio.mp3</div>
+            <div class="code-block">curl "https://convertidor-impaciente-de-microsoft.vercel.app/api/tts?text=Hola&voice=es-MX-DaliaNeural&rate=+25%" -o audio.mp3</div>
 
             <h3 style="color: #667eea; margin-top: 20px;">PHP</h3>
             <div class="code-block">$url = "https://convertidor-impaciente-de-microsoft.vercel.app/api/tts";
-$params = "?voice=es-MX-DaliaNeural&text=Hola";
+$params = http_build_query([
+    "text" => "Hola mundo",
+    "voice" => "es-MX-DaliaNeural",
+    "rate" => "+25%"
+]);
 
-file_put_contents("audio.mp3", file_get_contents($url . $params));</div>
+file_put_contents("audio.mp3", file_get_contents($url . "?" . $params));</div>
         </div>
 
         <div class="section">
@@ -261,7 +337,13 @@ file_put_contents("audio.mp3", file_get_contents($url . $params));</div>
                 <div class="voice-item">✅ 400+ voces neuronales</div>
                 <div class="voice-item">✅ 30+ idiomas</div>
                 <div class="voice-item">✅ Alta calidad (24kHz)</div>
+                <div class="voice-item">✅ Control de velocidad</div>
+                <div class="voice-item">✅ Control de tono</div>
+                <div class="voice-item">✅ Control de volumen</div>
                 <div class="voice-item">✅ Respuesta instantánea</div>
+                <div class="voice-item">✅ Headers HTTP completos</div>
+                <div class="voice-item">✅ Errores detallados</div>
+                <div class="voice-item">✅ Nombres personalizables</div>
             </div>
         </div>
 
@@ -278,117 +360,107 @@ file_put_contents("audio.mp3", file_get_contents($url . $params));</div>
     return HTMLResponse(content=html_content)
 
 @app.get("/tts")
-async def text_to_speech_main(voice: str = "", text: str = ""):
-    if not voice or not text or voice.strip() == "" or text.strip() == "":
-        return JSONResponse(
-            content={
-                "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Se requieren los parámetros voice y text"
-            },
-            status_code=400
-        )
-    
-    try:
-        communicate = edge_tts.Communicate(text, voice)
-        audio_buffer = BytesIO()
-        
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                audio_buffer.write(chunk["data"])
-        
-        if audio_buffer.tell() == 0:
-            return JSONResponse(
-                content={
-                    "status_code": 400,
-                    "developer": "El Impaciente",
-                    "message": "No se pudo generar el audio"
-                },
-                status_code=400
-            )
-        
-        audio_buffer.seek(0)
-        
-        return StreamingResponse(
-            audio_buffer,
-            media_type="audio/mpeg",
-            headers={
-                "Content-Disposition": "inline; filename=audio.mp3"
-            }
-        )
-        
-    except Exception as e:
-        return JSONResponse(
-            content={
-                "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Error al procesar la solicitud"
-            },
-            status_code=400
-        )
-
 @app.get("/api/tts")
-async def text_to_speech_api(voice: str = "", text: str = ""):
-    if not voice or not text or voice.strip() == "" or text.strip() == "":
+async def text_to_speech(
+    text: str = None,
+    voice: str = "en-US-GuyNeural",
+    rate: str = "+0%",
+    pitch: str = "+0Hz",
+    volume: str = "+0%",
+    file_name: str = "generated_mp3.mp3"
+):
+    # Validación de texto requerido
+    if not text or text.strip() == "":
         return JSONResponse(
             content={
                 "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Se requieren los parámetros voice y text"
+                "message": "Text is required"
             },
             status_code=400
         )
     
     try:
-        communicate = edge_tts.Communicate(text, voice)
-        audio_buffer = BytesIO()
+        # Asegurar valores predeterminados válidos
+        rate = rate if rate else "+0%"
+        volume = volume if volume else "+0%"
+        pitch = pitch if pitch else "+0Hz"
+        voice = voice if voice else "en-US-GuyNeural"
+        file_name = file_name if file_name and file_name.strip() else "generated_mp3.mp3"
         
+        # Asegurar extensión .mp3
+        if not file_name.lower().endswith(".mp3"):
+            file_name += ".mp3"
+        
+        # Crear comunicación con edge-tts
+        communicate = edge_tts.Communicate(text, voice, rate=rate, volume=volume, pitch=pitch)
+        
+        # Recolectar chunks de audio
+        audio_chunks = []
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
-                audio_buffer.write(chunk["data"])
+                audio_chunks.append(chunk["data"])
         
-        if audio_buffer.tell() == 0:
+        # Validar que se recibieron chunks
+        if not audio_chunks:
             return JSONResponse(
                 content={
-                    "status_code": 400,
-                    "developer": "El Impaciente",
-                    "message": "No se pudo generar el audio"
+                    "status_code": 500,
+                    "message": "No audio chunks received from TTS service"
                 },
-                status_code=400
+                status_code=500
             )
         
-        audio_buffer.seek(0)
+        # Concatenar audio
+        audio_data = b"".join(audio_chunks)
         
-        return StreamingResponse(
-            audio_buffer,
+        # Validar que el audio no esté vacío
+        if len(audio_data) == 0:
+            return JSONResponse(
+                content={
+                    "status_code": 500,
+                    "message": "Empty audio data received"
+                },
+                status_code=500
+            )
+        
+        # Retornar respuesta con headers completos
+        return Response(
+            content=audio_data,
             media_type="audio/mpeg",
             headers={
-                "Content-Disposition": "inline; filename=audio.mp3"
+                "Content-Disposition": f"inline; filename={file_name}",
+                "Content-Length": str(len(audio_data)),
+                "Accept-Ranges": "bytes"
             }
         )
         
     except Exception as e:
         return JSONResponse(
             content={
-                "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Error al procesar la solicitud"
+                "status_code": 500,
+                "message": f"Error: {str(e)}"
             },
-            status_code=400
+            status_code=500
         )
 
 @app.get("/voices")
+@app.get("/api/voices")
 async def list_voices():
     try:
         voices = await edge_tts.list_voices()
-        formatted_voices = [
-            {
-                "name": voice["ShortName"],
-                "gender": voice["Gender"],
-                "locale": voice["Locale"]
-            }
-            for voice in voices
-        ]
+        
+        # Ordenar voces por locale y nombre
+        sorted_voices = sorted(voices, key=lambda x: (x.get("Locale", ""), x.get("ShortName", "")))
+        
+        # Formatear con toda la información
+        formatted_voices = []
+        for v in sorted_voices:
+            formatted_voices.append({
+                "ShortName": v.get("ShortName", "N/A"),
+                "FriendlyName": v.get("FriendlyName", v.get("ShortName", "N/A")),
+                "Gender": v.get("Gender", "Unknown"),
+                "Locale": v.get("Locale", "N/A")
+            })
         
         return JSONResponse(
             content={
@@ -396,49 +468,14 @@ async def list_voices():
                 "developer": "El Impaciente",
                 "total": len(formatted_voices),
                 "voices": formatted_voices
-            },
-            status_code=200
-        )
-        
-    except Exception as e:
-        return JSONResponse(
-            content={
-                "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Error al obtener las voces"
-            },
-            status_code=400
-        )
-
-@app.get("/api/voices")
-async def list_voices_api():
-    try:
-        voices = await edge_tts.list_voices()
-        formatted_voices = [
-            {
-                "name": voice["ShortName"],
-                "gender": voice["Gender"],
-                "locale": voice["Locale"]
             }
-            for voice in voices
-        ]
-        
-        return JSONResponse(
-            content={
-                "status_code": 200,
-                "developer": "El Impaciente",
-                "total": len(formatted_voices),
-                "voices": formatted_voices
-            },
-            status_code=200
         )
         
     except Exception as e:
         return JSONResponse(
             content={
-                "status_code": 400,
-                "developer": "El Impaciente",
-                "message": "Error al obtener las voces"
+                "status_code": 500,
+                "message": str(e)
             },
-            status_code=400
+            status_code=500
         )
